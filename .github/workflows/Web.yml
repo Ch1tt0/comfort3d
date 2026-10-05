@@ -66,7 +66,7 @@ jobs:
         run: mkdir dist/ && mkdir dist/assets/ && cp -r web/. dist && cp -r assets/. dist/assets
 
       - name: Generate Webassembly files.
-        run: wasm-bindgen --out-dir dist/ target/wasm32-unknown-unknown/wasm-release/comfort3d.wasm
+        run: wasm-bindgen --out-dir dist/ --out-name Comfort3D --target web target/wasm32-unknown-unknown/wasm-release/comfort3d.wasm
 
       - name: Setup Pages
         uses: actions/configure-pages@v6
