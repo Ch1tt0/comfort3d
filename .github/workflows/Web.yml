@@ -3,7 +3,7 @@ name: Publish To Pages
 on:
   push:
     branches: ["master"]
-  workflow_dispatch: true
+  workflow_dispatch:
 
 permissions:
   contents: read
