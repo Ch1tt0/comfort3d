@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <style>
-      *,*::before,*::after {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
 
         margin: 0;
@@ -12,16 +14,16 @@
 
         overflow: hidden;
       }
-      
+
       html {
         height: 100%;
         width: 100%;
       }
-      
+
       body {
         height: 100%;
         width: 100%;
-        
+
         background: linear-gradient(
             135deg,
             white 0%,
@@ -32,10 +34,10 @@
             white 100%
           )
           repeat;
-        
+
         background-size: 20px 20px;
       }
-      
+
       canvas {
         background-color: white;
       }
@@ -51,7 +53,7 @@
       (function () {
         // An array of all contexts to resume on the page.
         const audioContextList = [];
-  
+
         // An array of various user interaction events we should listen for.
         const userInputEventNames = [
           "click",
@@ -65,7 +67,7 @@
           "keydown",
           "keyup",
         ];
-  
+
         // A proxy object to intercept AudioContexts and add them to the array for tracking and resuming later.
         self.AudioContext = new Proxy(self.AudioContext, {
           construct(target, args) {
@@ -74,11 +76,11 @@
             return result;
           },
         });
-  
+
         // To resume all AudioContexts being tracked.
         function resumeAllContexts(event) {
           let count = 0;
-  
+
           audioContextList.forEach((context) => {
             if (context.state !== "running") {
               context.resume();
@@ -86,7 +88,7 @@
               count++;
             }
           });
-  
+
           // If all the AudioContexts have now resumed then we unbind all the event listeners from the page to prevent unnecessary resume attempts.
           if (count == audioContextList.length) {
             userInputEventNames.forEach((eventName) => {
@@ -94,7 +96,7 @@
             });
           }
         }
-  
+
         // We bind the resume function for each user interaction event on the page.
         userInputEventNames.forEach((eventName) => {
           document.addEventListener(eventName, resumeAllContexts);

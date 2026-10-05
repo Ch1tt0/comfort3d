@@ -56,5 +56,30 @@ jobs:
       - name: Install Dependencies
         run: sudo apt-get install g++ mold clang git pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev mesa-vulkan-drivers
 
+      - name: Install wasm-bindgen-cli
+        run: cargo install wasm-bindgen-cli
+
       - name: Build
         run: cargo build --profile wasm-release --target wasm32-unknown-unknown --verbose
+
+      - name: Create dist/ directory and copy over required files.
+        run: |
+          mkdir dist/
+          mkdir dist/assets/
+          cp web/* dist/*
+          cp assets/* dist/assets/*
+
+      - name: Generate Webassembly files.
+        run: wasm-bindgen --out-dir dist/ target/wasm32-unknown-unknown/wasm-release/comfort3d.wasm
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload Web Directory
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
