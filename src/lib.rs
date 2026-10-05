@@ -1,6 +1,9 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
+mod components;
+mod data;
+mod dev;
 mod scenes;
 // mod camera;
 // mod debug;
@@ -16,6 +19,9 @@ pub struct AppPlugin;
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(PhysicsPlugins::default()); // Avian3D
+
+        app.add_plugins(components::window::CCCWindowPlugin);
+        app.add_plugins(dev::DevPlugin);
 
         app.add_systems(Startup, scenes::dev::scene.spawn());
     }

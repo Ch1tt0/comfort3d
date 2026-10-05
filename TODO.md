@@ -1,1 +1,1 @@
-- Use mold for faster compilation.
+- Seperate into layers like: Default, World, Player, Entities, Props, etc. In physicis use MaskLayer.
