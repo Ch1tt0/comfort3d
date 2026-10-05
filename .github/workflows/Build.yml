@@ -12,22 +12,11 @@ env:
 
 jobs:
   build:
-    name: Build on ${{ matrix.os }} for ${{ matrix.target }} with ${{ matrix.profile }}
+    name: Build on ${{ matrix.os }} with profile ${{ matrix.profile }}.
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
         profile: ["dev", "release"]
-        target:
-          [
-            "x86_64-pc-windows-msvc",
-            "x86_64-unknown-linux-gnu",
-          ]
-        exclude:
-          - os: windows-latest # Don't compile for Linux on Windows.
-            target: "x86_64-unknown-linux-gnu"
-
-          - os: ubuntu-latest # Don't compile for Windows on Linux.
-            target: "x86_64-pc-windows-msvc"
 
     runs-on: ${{ matrix.os }}
 
@@ -47,19 +36,18 @@ jobs:
             target/
             node_modules/
 
-          key: ${{ matrix.os }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ matrix.os }}-
+          key: ${{ matrix.os }}-${{ matrix.profile }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ matrix.os }}-${{ matrix.profile }}-
 
       - name: Setup Rust
         uses: actions-rust-lang/setup-rust-toolchain@v2
         with:
           toolchain: nightly
-          target: ${{ matrix.target }}
           cache: false # We handle cache on our own.
 
       - name: Install Dependencies # Runs only if the runner OS is ubuntu-latest.
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: sudo apt-get install g++ mold clang git pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev mesa-vulkan-drivers 
+        run: sudo apt-get install g++ mold clang git pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev mesa-vulkan-drivers
 
       - name: Build
-        run: cargo build --profile ${{ matrix.profile }} --target ${{ matrix.target }} --verbose
+        run: cargo build --profile ${{ matrix.profile }} --verbose

@@ -16,5 +16,10 @@
   "main": "index.js",
   "scripts": {
     "test": "node scripts/index.js"
+  },
+  "dependencies": {
+    "@types/node": "^26.6.4",
+    "gradient-string": "^3.0.0",
+    "typescript": "^7.0.2"
   }
 }
