@@ -63,11 +63,7 @@ jobs:
         run: cargo build --profile wasm-release --target wasm32-unknown-unknown --verbose
 
       - name: Create dist/ directory and copy over required files.
-        run: |
-          mkdir dist/
-          mkdir dist/assets/
-          cp web/* dist/*
-          cp assets/* dist/assets/*
+        run: mkdir dist/ && mkdir dist/assets/ && cp -r web/. dist && cp -r assets/. dist/assets
 
       - name: Generate Webassembly files.
         run: wasm-bindgen --out-dir dist/ target/wasm32-unknown-unknown/wasm-release/comfort3d.wasm
