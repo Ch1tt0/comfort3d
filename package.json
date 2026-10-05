@@ -1,0 +1,20 @@
+{
+  "name": "build-system",
+  "version": "0.0.1-alpha",
+  "description": "Build system for comfort3d.",
+  "keywords": [
+    "build",
+    "build-system"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ch1tt0/comfort3d.git"
+  },
+  "license": "MIT",
+  "author": "Chitto <jlast07@icloud.com>",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node scripts/index.js"
+  }
+}
