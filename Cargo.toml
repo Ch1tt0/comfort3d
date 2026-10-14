@@ -25,7 +25,7 @@ avian3d = { version = "0.7.0", default-features = false, features = [
   "diagnostic_ui",
   "debug-plugin"
   ]}
-bevy = { version = "0.19.1", features = [ "free_camera" ] }
+bevy = { version = "0.20.0", features = [ "free_camera" ] }
 serde = "1.0.229"
 # WORK_AROUND: Work around for wasm-bindgen failing on:
 # error: failed to find intrinsics to enable `clone_ref` function.
