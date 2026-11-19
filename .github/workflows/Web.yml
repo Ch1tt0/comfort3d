@@ -57,7 +57,7 @@ jobs:
         run: sudo apt-get install g++ mold clang git pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev mesa-vulkan-drivers
 
       - name: Install wasm-bindgen-cli
-        run: cargo install wasm-bindgen-cli
+        run: cargo install -f wasm-bindgen-cli --version 0.2.129
 
       - name: Build
         run: cargo build --profile wasm-release --target wasm32-unknown-unknown --verbose
