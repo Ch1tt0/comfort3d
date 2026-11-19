@@ -1,29 +1,27 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-mod components;
-mod data;
-mod dev;
-mod scenes;
-// mod camera;
-// mod debug;
-// mod dev_tools;
-// mod game;
-// mod input;
-// mod physics;
-// mod utils;
-// mod window;
+use crate::character::plugin::CharacterControllerPlugin;
+
+mod character;
+mod startup;
+
+mod window;
+use window::WindowSettingsPlugin;
 
 pub struct AppPlugin;
 
 impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(DefaultPlugins.build().disable::<WindowPlugin>()); // Bevy Default
         app.add_plugins(PhysicsPlugins::default()); // Avian3D
+        app.add_plugins(PhysicsDebugPlugin); // Avian3D Debug
 
-        app.add_plugins(components::window::CCCWindowPlugin);
-        app.add_plugins(dev::DevPlugin);
+        app.add_plugins(WindowSettingsPlugin);
 
-        app.add_systems(Startup, scenes::dev::scene.spawn());
+        app.add_plugins(CharacterControllerPlugin);
+
+        app.add_systems(Startup, startup::setup);
     }
 }
 

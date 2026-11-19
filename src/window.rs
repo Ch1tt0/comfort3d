@@ -1,16 +1,12 @@
 use bevy::app::{App, Plugin};
 
 use bevy::{prelude::*, window::Window};
+pub struct WindowSettingsPlugin;
 
-use crate::data::GameInfo;
-
-pub struct CCCWindowPlugin;
-
-impl Plugin for CCCWindowPlugin {
+impl Plugin for WindowSettingsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(WindowPlugin {
             primary_window: Some(Window {
-                title: GameInfo::default().get_game_name(),
                 // 1. Fits canvas to parent (<body>).
                 // 2. Prevents browser hotkeys from escaping.
                 fit_canvas_to_parent: true,

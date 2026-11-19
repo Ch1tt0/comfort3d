@@ -8,7 +8,7 @@ publish = false
 edition = "2024"
 
 [dependencies]
-avian3d = { version = "0.7.0", default-features = false, features = [ 
+avian3d = { version = "0.8.0", default-features = false, features = [ 
   "3d", 
   "default-collider", 
   "xpbd_joints", 
@@ -16,7 +16,6 @@ avian3d = { version = "0.7.0", default-features = false, features = [
   "bevy_scene", 
   "bevy_picking", 
   "parallel", 
-  "simd", 
   "serialize", 
   "validate", 
   "f64", 
@@ -25,7 +24,7 @@ avian3d = { version = "0.7.0", default-features = false, features = [
   "diagnostic_ui",
   "debug-plugin"
   ]}
-bevy = { version = "0.20.0", features = [ "free_camera" ] }
+bevy = "0.20.1"
 serde = "1.0.229"
 # WORK_AROUND: Work around for wasm-bindgen failing on:
 # error: failed to find intrinsics to enable `clone_ref` function.
