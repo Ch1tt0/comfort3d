@@ -1,10 +1,10 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-use crate::character::plugin::CharacterControllerPlugin;
+use crate::character::CharacterControllerPlugin;
 
 mod character;
-mod startup;
+use character::spawn::spawn_player;
 
 mod window;
 use window::WindowSettingsPlugin;
@@ -21,7 +21,7 @@ impl Plugin for AppPlugin {
 
         app.add_plugins(CharacterControllerPlugin);
 
-        app.add_systems(Startup, startup::setup);
+        app.add_systems(Startup, (setup, spawn_player));
     }
 }
 
@@ -37,4 +37,25 @@ mod tests {
     }
 
     // Tests here...
+}
+
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
+    // Environment
+    commands.spawn((
+        WorldAssetRoot(assets.load("DevMap.glb#Scene0")),
+        Transform::from_rotation(Quat::from_rotation_y(-core::f32::consts::PI * 0.5)),
+        ColliderConstructorHierarchy::new(ColliderConstructor::ConvexHullFromMesh),
+        RigidBody::Static,
+    ));
+
+    // Light
+    commands.spawn((
+        PointLight {
+            intensity: 2_000_000.0,
+            range: 50.0,
+            shadow_maps_enabled: true,
+            ..default()
+        },
+        Transform::from_xyz(0.0, 15.0, 0.0),
+    ));
 }

@@ -1,131 +1,11 @@
-use core::f32::consts::PI;
-
 use avian3d::{math::*, prelude::*};
 use bevy::{ecs::query::Has, prelude::*};
 
-/// A plugin that implements a basic platformer kinematic character controller using move-and-slide,
-/// with support for ground detection and configurable movement settings.
-pub struct CharacterControllerPlugin;
-
-impl Plugin for CharacterControllerPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_message::<MovementAction>();
-
-        // Collect input in `PreUpdate` so that it's processed before the physics update.
-        app.add_systems(PreUpdate, (keyboard_input, gamepad_input).chain());
-
-        // Run movement logic in `FixedUpdate` to ensure consistent behavior regardless of frame rate.
-        app.add_systems(
-            FixedUpdate,
-            (
-                update_grounded,
-                apply_gravity,
-                movement,
-                apply_movement_damping,
-                move_and_slide,
-                apply_forces_to_dynamic_bodies,
-            )
-                .chain(),
-        );
-    }
-}
-
-/// A [`Message`] written for a movement input action.
-#[derive(Message)]
-pub enum MovementAction {
-    Move(Vec2),
-    Jump,
-}
-
-/// A marker component indicating that an entity is using a character controller.
-///
-/// This also requires the entity to have a `CustomPositionIntegration` component, which is used
-/// to prevent Avian from automatically applying the character's velocity to its position,
-/// since the character controller will handle movement manually using move-and-slide.
-#[derive(Component)]
-#[require(RigidBody::Kinematic, CustomPositionIntegration)]
-pub struct CharacterController;
-
-/// Component for configuring movement settings for a character controller.
-#[derive(Component)]
-pub struct CharacterMovementSettings {
-    /// The acceleration used for character movement.
-    pub acceleration: f32,
-    /// The damping coefficient used for slowing down movement.
-    pub damping: f32,
-    /// The strength of a jump.
-    pub jump_impulse: f32,
-    /// The gravitational acceleration used for the character.
-    pub gravity: Vec3,
-    /// The maximum speed that gravity can accelerate the character to.
-    /// This prevents the character from accelerating indefinitely while falling.
-    pub terminal_velocity: f32,
-}
-
-impl Default for CharacterMovementSettings {
-    fn default() -> Self {
-        Self {
-            acceleration: 50.0,
-            damping: 10.0,
-            jump_impulse: 7.0,
-            gravity: Vec3::new(0.0, -9.81 * 2.0, 0.0),
-            terminal_velocity: 50.0,
-        }
-    }
-}
-
-/// Component for configuring ground detection for a character controller.
-#[derive(Component)]
-pub struct GroundDetection {
-    /// The maximum angle (in radians) where a surface is considered ground/ceiling
-    /// relative to the up-direction. Outside of this angle, surfaces are considered walls.
-    ///
-    /// **Default**: 30 degrees (π / 6 radians)
-    pub max_angle: f32,
-    /// The maximum distance for ground detection.
-    pub max_distance: f32,
-    /// The shape cast collider used for ground detection.
-    pub cast_shape: Option<Collider>,
-}
-
-impl Default for GroundDetection {
-    fn default() -> Self {
-        Self {
-            max_angle: PI / 6.0,
-            max_distance: 0.2,
-            cast_shape: None,
-        }
-    }
-}
-
-/// A marker component indicating that an entity is on a surface that is considered
-/// ground, meaning the steepness is less than [`GroundDetection::max_angle`].
-///
-/// Characters that are grounded can jump, and do not slide down slopes.
-#[derive(Component)]
-#[component(storage = "SparseSet")]
-pub struct Grounded;
-
-/// A component containing information about the current collisions for a character controller.
-///
-/// This is used to apply forces to dynamic rigid bodies hit by the character.
-#[derive(Component, Default, Deref)]
-pub struct CharacterCollisions(Vec<CharacterCollision>);
-
-/// Information about a collision between a character controller and another collider.
-pub struct CharacterCollision {
-    /// The collider that was hit by the character.
-    pub collider: Entity,
-    /// The point of contact in world space.
-    pub point: RVec3,
-    /// The normal of the contact surface, pointing away from the character.
-    pub normal: Dir3,
-    /// The velocity of the character at the point of contact.
-    pub character_velocity: Vec3,
-}
+use super::components::*;
+use super::helpers::*;
 
 /// Sends [`MovementAction`] events based on keyboard input.
-fn keyboard_input(
+pub fn keyboard_input(
     mut movement_writer: MessageWriter<MovementAction>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
@@ -148,7 +28,10 @@ fn keyboard_input(
 }
 
 /// Sends [`MovementAction`] events based on gamepad input.
-fn gamepad_input(mut movement_writer: MessageWriter<MovementAction>, gamepads: Query<&Gamepad>) {
+pub fn gamepad_input(
+    mut movement_writer: MessageWriter<MovementAction>,
+    gamepads: Query<&Gamepad>,
+) {
     for gamepad in gamepads.iter() {
         if let (Some(x), Some(y)) = (
             gamepad.get(GamepadAxis::LeftStickX),
@@ -164,7 +47,7 @@ fn gamepad_input(mut movement_writer: MessageWriter<MovementAction>, gamepads: Q
 }
 
 /// Updates the [`Grounded`] status for character controllers.
-fn update_grounded(
+pub fn update_grounded(
     mut commands: Commands,
     mut query: Query<(Entity, &GroundDetection, &GlobalTransform)>,
     spatial_query: SpatialQuery,
@@ -203,7 +86,7 @@ fn update_grounded(
 }
 
 /// Responds to [`MovementAction`] events and moves character controllers accordingly.
-fn movement(
+pub fn movement(
     time: Res<Time>,
     mut movement_reader: MessageReader<MovementAction>,
     mut controllers: Query<(
@@ -232,7 +115,7 @@ fn movement(
 }
 
 /// Applies gravity to character controllers.
-fn apply_gravity(
+pub fn apply_gravity(
     time: Res<Time>,
     mut controllers: Query<(&CharacterMovementSettings, &mut LinearVelocity)>,
 ) {
@@ -261,7 +144,7 @@ fn apply_gravity(
 }
 
 /// Slows down movement in the XZ plane.
-fn apply_movement_damping(
+pub fn apply_movement_damping(
     mut query: Query<(&CharacterMovementSettings, &mut LinearVelocity)>,
     time: Res<Time>,
 ) {
@@ -280,7 +163,7 @@ fn apply_movement_damping(
 ///
 /// For simplicity, we assume that the character is not a child entity,
 /// and its collider is on the same entity as the `CharacterController`.
-fn move_and_slide(
+pub fn move_and_slide(
     mut query: Query<
         (
             Entity,
@@ -405,71 +288,6 @@ fn move_and_slide(
             let velocity_along_up = lin_vel.dot(up);
             let new_velocity_along_up = projected_velocity.dot(up);
             lin_vel.0 += (new_velocity_along_up - velocity_along_up) * up;
-        }
-    }
-}
-
-/// The decomposition of a velocity vector into parts relative to a collision normal and an up-direction.
-///
-/// This is used for determining how much of the velocity is contributing to climbing, slipping, and unconstrained movement.
-#[derive(Debug)]
-struct VelocityDecomposition {
-    /// The part of the velocity that is directly against the collision normal.
-    normal_part: Vec3,
-    /// The part of the velocity that is tangent to the collision surface and perpendicular to the up-direction.
-    horizontal_tangent: Vec3,
-    /// The part of the velocity that is tangent to the collision surface and parallel to the up-direction.
-    vertical_tangent: Vec3,
-}
-
-/// Decomposes a velocity vector into parts relative to a collision `normal` and an `up` direction.
-fn decompose_hit_velocity(velocity: Vec3, normal: Dir3, up: Vec3) -> VelocityDecomposition {
-    let normal_part = normal * normal.dot(velocity);
-    let tangent_part = velocity - normal_part;
-
-    let horizontal_tangent_dir = normal.cross(up).normalize_or_zero();
-    let horizontal_tangent = tangent_part.dot(horizontal_tangent_dir) * horizontal_tangent_dir;
-    let vertical_tangent = tangent_part - horizontal_tangent;
-
-    VelocityDecomposition {
-        normal_part,
-        horizontal_tangent,
-        vertical_tangent,
-    }
-}
-
-/// Splits a vector into horizontal and vertical components relative to a given `up` direction.
-fn split_into_components(v: Vec3, up: Vec3) -> [Vec3; 2] {
-    let vertical_component = up * v.dot(up);
-    let horizontal_component = v - vertical_component;
-    [horizontal_component, vertical_component]
-}
-
-/// Applies forces to dynamic rigid bodies hit by character controllers based on their collisions.
-fn apply_forces_to_dynamic_bodies(
-    characters: Query<(&ComputedMass, &CharacterCollisions)>,
-    colliders: Query<&ColliderOf>,
-    mut rigid_bodies: Query<(&RigidBody, Forces)>,
-) {
-    for (mass, collisions) in &characters {
-        let mass = mass.value();
-        for collision in &collisions.0 {
-            let Ok(collider_of) = colliders.get(collision.collider) else {
-                continue;
-            };
-            let Ok((rigid_body, mut forces)) = rigid_bodies.get_mut(collider_of.body) else {
-                continue;
-            };
-            if !rigid_body.is_dynamic() {
-                continue;
-            }
-
-            let touch_dir = -collision.normal;
-            let relative_velocity = collision.character_velocity - forces.linear_velocity();
-            let touch_velocity = touch_dir.dot(relative_velocity) * touch_dir;
-            let impulse = touch_velocity * mass;
-
-            forces.apply_linear_impulse_at_point(impulse, collision.point);
         }
     }
 }
